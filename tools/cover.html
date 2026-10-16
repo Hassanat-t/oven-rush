@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pink Oven Rush cover</title>
+  <!-- Renders cover.png from the real game scene. Open at 1600x1000 and screenshot (see PROJECT.md). -->
+  <style>
+    html, body { margin: 0; width: 1600px; height: 1000px; overflow: hidden; background: #ffd8e7; font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, sans-serif; }
+    canvas { position: absolute; inset: 0; width: 1600px; height: 1000px; }
+    body.export .title { display: none; }
+    .title { position: absolute; right: 64px; top: 190px; color: #3a0d27; text-align: right; padding: 34px 40px 38px; border-radius: 44px; background: rgba(255, 246, 250, .86); box-shadow: 0 20px 60px rgba(58,13,39,.18); }
+    .kicker { font: 700 22px/1 ui-monospace, Menlo, monospace; letter-spacing: .2em; text-transform: uppercase; color: #ff4f9a; margin-bottom: 14px; }
+    h1 { margin: 0; font-size: 132px; line-height: .9; letter-spacing: -.04em; text-shadow: 0 6px 0 #fff; }
+    h1 span { color: #ff4f9a; }
+    .tag { display: inline-block; margin-top: 24px; padding: 12px 22px; border-radius: 999px; background: #3a0d27; color: #ffd1e8; font-size: 28px; font-weight: 800; }
+  </style>
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="c" width="1600" height="1000"></canvas>
+  <div class="title">
+    <div class="kicker">a start.ng game</div>
+    <h1>Pink Oven<br><span>Rush</span></h1>
+    <div class="tag">🍪 Serve the rush · 🧋 90-second shifts</div>
+  </div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { buildHuman } from '../src/human.js';
+    import { buildBakery, addLights, makeItem, PALETTE } from '../src/world.js';
+    import { CUSTOMERS } from '../src/characters.js';
+
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(1600, 1000, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#ffd8e7');
+    addLights(scene);
+    const bakery = buildBakery();
+    scene.add(bakery.group);
+
+    // the baker (start.ng's guest look) with a pink apron, carrying a full tray towards the counter
+    const baker = buildHuman({ body: 'female', primaryColor: '#fff3e6', secondaryColor: '#3a0d27', skinColor: '#a0662f', hairColor: '#17120f', hair: 'bun', hat: 'none', accessory: 'none' });
+    const apron = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 0.012), new THREE.MeshStandardMaterial({ color: PALETTE.hot, roughness: 0.8 }));
+    apron.position.set(0, 0.08, 0.104);
+    baker.spine.add(apron);
+    const tray = new THREE.Group();
+    tray.add(new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.022, 0.28), new THREE.MeshStandardMaterial({ color: PALETTE.hot, roughness: 0.55 })));
+    ['berry', 'choc', 'taro'].forEach((id, i) => {
+      const it = makeItem(id);
+      it.position.set((i - 1) * 0.14, 0.012, 0);
+      it.scale.setScalar(0.85);
+      tray.add(it);
+    });
+    tray.position.set(0, 1.02, 0.36);
+    baker.root.add(tray);
+    baker.root.position.set(-1.55, 0, 0.75);
+    baker.root.rotation.y = -1.25;
+    baker.update(3, { walk: 1, phase: 0.9, carry: 1 });
+    scene.add(baker.root);
+
+    // three regulars at the counter
+    const picks = ['nkechi', 'spinz', 'bisi'];
+    [-1.7, 0, 1.7].forEach((z, i) => {
+      const c = buildHuman(CUSTOMERS.find((d) => d.id === picks[i]).style);
+      c.root.position.set(-4.05, 0, z);
+      c.root.rotation.y = Math.PI / 2;
+      c.update(2 + i * 1.7);
+      scene.add(c.root);
+    });
+
+    const camera = new THREE.PerspectiveCamera(34, 1.6, 0.1, 60);
+    camera.position.set(2.3, 3.1, 5.3);
+    camera.lookAt(-0.6, 1.0, -0.5);
+    bakery.update(1);
+    renderer.render(scene, camera);
+    document.body.dataset.ready = '1';
+
+    // ?export draws the title onto the picture and prints it as a PNG data URL (for headless capture)
+    if (new URLSearchParams(location.search).has('export')) {
+      await document.fonts.ready;
+      const out = document.createElement('canvas');
+      out.width = 1600;
+      out.height = 1000;
+      const g = out.getContext('2d');
+      g.drawImage(renderer.domElement, 0, 0, 1600, 1000);
+      const font = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, sans-serif';
+      const x = 1536, y = 190, w = 636, h = 330;
+      g.save();
+      g.shadowColor = 'rgba(58,13,39,.18)';
+      g.shadowBlur = 60;
+      g.shadowOffsetY = 20;
+      g.fillStyle = 'rgba(255,246,250,.9)';
+      g.beginPath();
+      g.roundRect(x - w, y, w, h, 44);
+      g.fill();
+      g.restore();
+      g.textAlign = 'right';
+      g.fillStyle = '#ff4f9a';
+      g.font = '700 22px ui-monospace, Menlo, monospace';
+      g.letterSpacing = '4px';
+      g.fillText('A START.NG GAME', x - 40, y + 58);
+      g.letterSpacing = '-5px';
+      g.font = `800 120px ${font}`;
+      g.fillStyle = '#ffffff';
+      g.fillText('Pink Oven', x - 40, y + 172 + 6);
+      g.fillStyle = '#3a0d27';
+      g.fillText('Pink Oven', x - 40, y + 172);
+      g.fillStyle = '#ffffff';
+      g.fillText('Rush', x - 40, y + 278 + 6);
+      g.fillStyle = '#ff4f9a';
+      g.fillText('Rush', x - 40, y + 278);
+      g.letterSpacing = '0px';
+      document.body.replaceChildren(Object.assign(document.createElement('pre'), { id: 'png', textContent: out.toDataURL('image/png') }));
+    }
+  </script>
+</body>
+</html>

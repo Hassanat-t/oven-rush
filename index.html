@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pink Oven Rush</title>
+  <meta name="description" content="Run the counter at tt's pink oven: serve cookies and boba to Lagos regulars before they lose patience. A 3D start.ng game.">
+  <meta name="theme-color" content="#ff4f9a">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍪</text></svg>">
+  <link rel="stylesheet" href="src/style.css">
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="scene" aria-label="The tt's pink oven bakery"></canvas>
+  <div id="labels" aria-hidden="true"></div>
+
+  <!-- player card: who's playing, from start.ng -->
+  <div id="player" class="player" hidden>
+    <img id="player-face" alt="">
+    <div><b id="player-name"></b><span id="player-account"></span></div>
+  </div>
+
+  <!-- in-game HUD -->
+  <header id="hud" class="hud" hidden>
+    <div class="hud-pill" title="Time left"><span class="hud-icon">⏱</span><b id="hud-time">1:30</b></div>
+    <div class="hud-pill" title="Score"><span class="hud-icon">★</span><b id="hud-score">0</b></div>
+    <div class="hud-pill hearts" id="hud-hearts" title="Hearts">♥♥♥</div>
+    <div class="hud-pill combo" id="hud-combo" hidden>×2 combo</div>
+    <button class="hud-btn" id="pause-btn" aria-label="Pause">❚❚</button>
+  </header>
+
+  <div id="tray" class="tray" hidden>
+    <span class="tray-label">Tray</span>
+    <div id="tray-slots" class="tray-slots"></div>
+    <button id="tray-bin" class="tray-bin" title="Empty the tray (X)">🗑 <kbd>X</kbd></button>
+  </div>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <!-- menu -->
+  <section id="menu" class="screen menu">
+    <div class="menu-card">
+      <p class="kicker">a start.ng game</p>
+      <h1 class="logo">Pink Oven <span>Rush</span></h1>
+      <p class="tagline">You're on the counter at <b>tt's pink oven</b>. Serve cookies and boba to the Lagos regulars before they lose patience.</p>
+
+      <p id="greeting" class="greeting"></p>
+      <div id="auth" class="buttons"></div>
+      <p id="note" class="note" hidden></p>
+
+      <div class="apron">
+        <span>Apron</span>
+        <div id="apron-colours" class="swatches" role="radiogroup" aria-label="Apron colour"></div>
+      </div>
+
+      <details class="how">
+        <summary>How to play</summary>
+        <ul>
+          <li>Tap a <b>shelf</b> to pick up a cookie or boba (or press <kbd>1</kbd>–<kbd>6</kbd>). The tray holds 3.</li>
+          <li>Tap a <b>customer</b> or their ticket to serve them (or <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd>).</li>
+          <li>Fast serves earn tips and combos. A customer who storms off costs a <b>♥</b>.</li>
+          <li>The shift lasts <b>90 seconds</b>. Lose all 3 hearts and it ends early.</li>
+          <li>Wrong items? Empty the tray in the bin (<kbd>X</kbd>). Pause with <kbd>P</kbd>.</li>
+        </ul>
+      </details>
+    </div>
+
+    <aside class="board-card">
+      <h2>Top bakers</h2>
+      <ol id="menu-board" class="board"></ol>
+    </aside>
+  </section>
+
+  <!-- end of shift -->
+  <section id="end" class="screen end" hidden>
+    <div class="menu-card">
+      <p class="kicker" id="end-reason">Shift over</p>
+      <h1 class="logo small">Closing time!</h1>
+      <div class="stats">
+        <div><b id="end-score">0</b><span>score</span></div>
+        <div><b id="end-orders">0</b><span>orders</span></div>
+        <div><b id="end-perfect">0</b><span>perfect</span></div>
+        <div><b id="end-combo">0</b><span>best combo</span></div>
+      </div>
+      <p id="end-save" class="save"></p>
+      <div class="buttons">
+        <button id="again" class="btn primary">Play again</button>
+        <button id="to-menu" class="btn">Menu</button>
+      </div>
+    </div>
+    <aside class="board-card">
+      <h2>Top bakers</h2>
+      <ol id="end-board" class="board"></ol>
+    </aside>
+  </section>
+
+  <section id="pause" class="screen pause" hidden>
+    <div class="menu-card small">
+      <h1 class="logo small">Paused</h1>
+      <div class="buttons">
+        <button id="resume" class="btn primary">Resume</button>
+        <button id="quit" class="btn">End shift</button>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
